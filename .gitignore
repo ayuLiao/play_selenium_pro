@@ -89,3 +89,6 @@ explore
 
 chromedriver.exe
 chromedriver
+
+.env
+js/random_canvas.js

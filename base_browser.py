@@ -1,5 +1,6 @@
 import json
 import os
+import time
 import string
 import zipfile
 
@@ -43,7 +44,6 @@ class BaseBrowser:
         except Exception as e:
             logger.error(f'[wait_element_css] 等待超时, error: {e}')
             raise
-
 
     def add_header(self, headers):
         for k, v in headers.items():
@@ -177,20 +177,13 @@ class BaseBrowser:
         :return:
         """
 
-        # 去掉webdriver痕迹
+        # hidden webdriver feature
         self.options.add_argument("disable-blink-features=AutomationControlled")
-        # 设置开发者模式启动，该模式下webdriver属性为正常值
+        # open developer model, in this model, webdriver attribute is normal
         self.options.add_experimental_option("excludeSwitches", ["enable-automation"])
         self.options.add_experimental_option('useAutomationExtension', False)
         self.options.add_argument('lang=zh-CN,zh,zh-TW,en-US,en')
 
-        # 禁用浏览器弹窗
-        # prefs = {
-        #     'profile.default_content_setting_values': {
-        #         'notifications': 2
-        #     }
-        # }
-        # options.add_experimental_option('prefs', prefs)
         user_agent = get_user_agent()
         headers = {
             'Connection': 'keep-alive',
@@ -210,16 +203,15 @@ class BaseBrowser:
         if disable_css:
             self.disable_css()
 
-        # 设置代理
+        # set proxy
         if proxy_info:
             proxy_type = proxy_info.get('proxy_type', KYAIDAILI)
             if proxy_type == KYAIDAILI:
-                # 账号密码方式使用代理 - 通过插件形式
+                # proxy need username and password, selenium need plug to supple this.
                 # https://www.kuaidaili.com/doc/dev/sdk_http/#chrome
                 proxyauth_plugin_path = self.create_proxyauth_extension(
-                    proxy_host=f"{proxy_info['ip']}",  # 代理IP
-                    proxy_port=f"{proxy_info['port']}",  # 端口号
-                    # 用户名密码(私密代理/独享代理)
+                    proxy_host=f"{proxy_info['ip']}",  # proxy ip
+                    proxy_port=f"{proxy_info['port']}",  # proxy port
                     proxy_username=f"{proxy_info['username']}",
                     proxy_password=f"{proxy_info['password']}"
                 )
@@ -235,7 +227,7 @@ class BaseBrowser:
         browser = webdriver.Chrome(executable_path=path, chrome_options=self.options)
 
         defalut_script_files = [
-            'stealth.min.js',  # 隐藏Selenium特征
+            'stealth.min.js',  # hidden selenium feature
         ]
         if script_files:
             script_files.extend(defalut_script_files)
@@ -245,13 +237,12 @@ class BaseBrowser:
             js_path = os.path.join(root_path, 'js', sf)
             with open(js_path, encoding='utf-8') as f:
                 js = f.read()
-            # 在打开具体的网页前，执行隐藏浏览器特征的JavaScript
+            # execute javascript before webpage open
             browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
                 "source": js
             })
 
         if proxy_info:
-            # 设置地理位置，与IP的地理位置相同
             ip = proxy_info['ip']
             res_json = get_timezone_geolocation(ip)
             geo = {
@@ -259,14 +250,13 @@ class BaseBrowser:
                 "longitude": res_json.get('lon', 39.989410),
                 "accuracy": 1
             }
-            # 代理IP是全国
+            # Default timezone is Shanghai
             tz = {
                 "timezoneId": res_json.get('timezone', 'Asia/Shanghai')
             }
             browser.execute_cdp_cmd("Emulation.setGeolocationOverride", geo)
             browser.execute_cdp_cmd("Emulation.setTimezoneOverride", tz)
 
-        # 隐式等待的代码
         browser.implicitly_wait(15)
 
         return browser

@@ -10,7 +10,8 @@ class TestBrowser(BaseBrowser):
     def __init__(self):
         self.options = Options()
         js_script_name = modify_random_canvas_js()
-        self.browser = self.get_browser(headless=True, script_files=[js_script_name])
+        # self.browser = self.get_browser(headless=True, script_files=[js_script_name])
+        self.browser = self.get_browser()
 
     def get_grecaptcha(self):
         url = 'http://ayuliaotest.com/'
