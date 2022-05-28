@@ -9,7 +9,7 @@ class ZhiMa:
     """芝麻代理 https://www.zhimaruanjian.com/"""
 
     def __init__(self):
-        self.app_key = '83b82b4f0895f5bbdd35d4bc8998dece'
+        self.app_key = ''
         self.session = requests.session()
 
     def get_proxy(self, num, pro=0, city=0):
