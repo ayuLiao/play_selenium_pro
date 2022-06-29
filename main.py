@@ -3,8 +3,11 @@ import os
 from dotenv import load_dotenv
 
 from play.zapper.main import ZapperBrowser
-from play.test.main import TestBrowser
+from play.testGoogleV3.main import TestGoogleV3Browser
 from play.ftx.main import FtxBrowser
+from play.tradingeconomics.main import TradingeconomicsBrowser
+from play.hcaptcha.main import HCaptchaBrowser
+from play.jinshuju.main import JinshujuBrowser
 
 from logger import logger
 
@@ -24,7 +27,7 @@ def zapper_play():
 def test_play():
     for i in range(5):
         try:
-            result = TestBrowser().get_grecaptcha()
+            result = TestGoogleV3Browser().get_grecaptcha()
             print('结果: ', result)
             break
         except Exception as e:
@@ -40,5 +43,16 @@ def test_ftx():
     print('login and get cookies: ', cookies)
 
 
+
+def tradingeconomics_play():
+    TradingeconomicsBrowser().run()
+
+def hcaptcha_play():
+    HCaptchaBrowser().run()
+
+def jinshu_play():
+    JinshujuBrowser().run()
+
 if __name__ == '__main__':
-    test_ftx()
+    hcaptcha_play()
+    # jinshu_play()

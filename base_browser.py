@@ -5,6 +5,7 @@ import string
 import zipfile
 
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from selenium import webdriver
 
@@ -159,7 +160,21 @@ class BaseBrowser:
             zp.writestr("background.js", background_js)
         return plugin_path
 
-    def get_browser(self, disable_img=False, disable_css=False, headless=False, proxy_info=None, script_files=None):
+    def process_browser_logs_for_network_events(self, logs):
+        """
+        Return only logs which have a method that start with "Network.response", "Network.request", or "Network.webSocket"
+        since we're interested in the network events specifically.
+        """
+        for entry in logs:
+            log = json.loads(entry["message"])["message"]
+            if (
+                    "Network.response" in log["method"]
+                    or "Network.request" in log["method"]
+                    or "Network.webSocket" in log["method"]
+            ):
+                yield log
+
+    def get_browser(self, disable_img=False, disable_css=False, headless=False, proxy_info=None, script_files=None, record_network_log=None):
         """
         获取浏览器对象
         :param disable_img: 是否禁用图片加载
@@ -174,6 +189,7 @@ class BaseBrowser:
                 type, 使用的代理类型
             }
         :param script_files: 需要前置执行的脚本
+        :param record_network_log: 记录日志
         :return:
         """
 
@@ -223,8 +239,16 @@ class BaseBrowser:
                 # PROXY = "23.23.23.23:3128" # IP:PORT or HOST:PORT
                 self.options.add_argument('--proxy-server=%s' % proxy)
 
-        path = os.path.join(root_path, 'chromedriver')
-        browser = webdriver.Chrome(executable_path=path, chrome_options=self.options)
+        path = os.path.join(root_path, 'chromedriver.exe')
+        if record_network_log:
+            # https://gist.github.com/rengler33/f8b9d3f26a518c08a414f6f86109863c
+            capabilities = DesiredCapabilities.CHROME
+            # capabilities["loggingPrefs"] = {"performance": "ALL"}  # chromedriver < ~75
+            capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
+            browser = webdriver.Chrome(executable_path=path, chrome_options=self.options, desired_capabilities=capabilities)
+        else:
+            browser = webdriver.Chrome(executable_path=path, chrome_options=self.options)
+
 
         defalut_script_files = [
             'stealth.min.js',  # hidden selenium feature

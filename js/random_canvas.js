@@ -11,9 +11,9 @@ let noisify = function (canvas, context) {
                 const n = ((i * (width * 4)) + (j * 4));
                 // RBGA 4个维度都加随机的盐
                 imageData.data[n + 0] = imageData.data[n + 0] + 1;
-                imageData.data[n + 1] = imageData.data[n + 1] + 2;
-                imageData.data[n + 2] = imageData.data[n + 2] + -3;
-                imageData.data[n + 3] = imageData.data[n + 3] + -3;
+                imageData.data[n + 1] = imageData.data[n + 1] + 0;
+                imageData.data[n + 2] = imageData.data[n + 2] + -2;
+                imageData.data[n + 3] = imageData.data[n + 3] + 3;
             }
         }
     }
